@@ -4,9 +4,8 @@ from nltk.corpus import stopwords
 import string
 import re
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
-
+from sklearn.naive_bayes import MultinomialNB
 
 nltk.download('stopwords')
 nltk.download('wordnet')
@@ -81,35 +80,36 @@ def train_LR_model(train_file_path):
     vectoriser.fit(X_train)
     X_train = vectoriser.transform(X_train)
 
-    logisticRegressionModel = LogisticRegression(C=2, max_iter=1000, n_jobs=-1)
-    logisticRegressionModel.fit(X_train, data['subtask_a'])
+    naiveBayesModel = MultinomialNB()
+    naiveBayesModel.fit(X_train, data['subtask_a'])
 
-    return logisticRegressionModel
+    return naiveBayesModel
 
 
-def test_LR_model(test_file_path, LR_model):
+def test_LR_model(test_file_path, NB_model):
     test_data = pd.read_csv(test_file_path, sep='\t')
     print(test_data.head())
     test_data = preprocess(test_data)
 
     X_test = vectoriser.transform(test_data['tweet'])
-    predictions = LR_model.predict(X_test)
-    probabilities = LR_model.predict_proba(X_test)
+    predictions = NB_model.predict(X_test)
+    probabilities = NB_model.predict_proba(X_test)
 
     test_data_csv = pd.read_csv(test_file_path, sep='\t')
     test_data_csv["offensive_probability"] = probabilities[:,1]
     test_data_csv["predictions"] = predictions
-    test_data_csv.to_csv("results/logistic_regression_results.csv", sep='\t')
+    test_data_csv.to_csv("results/naive_bayes_results.csv", sep='\t')
 
-    print("Saved logistic regression model's results to results/logistic_regression_results.csv")
+    print("Saved Naive Bayes model's results to results/naive_bayes_results.csv")
 
     actual_labels = pd.read_csv("data/labels-levela.csv", header=None)
     actual_labels = actual_labels.iloc[:, 1]
     # print(actual_labels.head())
 
     score = accuracy_score(actual_labels, predictions)
-    print("Accuracy: {}".format(score))
+    print("NB Accuracy: {}".format(score))
 
 
-logisticRegressionModel = train_LR_model("data/olid-training-v1.0.tsv")
-test_LR_model("data/testset-levela.tsv", logisticRegressionModel)
+if __name__ == '__main__':
+    naiveBayesModel = train_LR_model("data/olid-training-v1.0.tsv")
+    test_LR_model("data/testset-levela.tsv", naiveBayesModel)
