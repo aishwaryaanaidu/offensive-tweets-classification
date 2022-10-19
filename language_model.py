@@ -1,3 +1,5 @@
+import math
+
 import nltk
 import pandas as pd
 from nltk.corpus import stopwords
@@ -30,6 +32,12 @@ def lemmatizer_on_text(data, lemmatizer):
     text = [lemmatizer.lemmatize(word) for word in data]
     return data
 
+
+def calculate_mle_for_tweet(language_model, data):
+    mle_score = 1
+    for word in data:
+        mle_score += language_model.score(word)
+    return round(mle_score, 2)
 
 def preprocess(data):
     # Remove mentions (@USER)
@@ -99,7 +107,7 @@ def test_LM(test_file_path, languageModel, results_file_name):
     print(test_data.head())
 
     test_data_csv = pd.read_csv(test_file_path, sep='\t')
-    test_data_csv['mle'] = test_data.iloc[:, 1].apply(lambda x: languageModel.score(x))
+    test_data_csv['mle'] = test_data.iloc[:, 1].apply(lambda x: calculate_mle_for_tweet(languageModel, x))
     test_data_csv.to_csv("results/" + results_file_name + ".csv", sep='\t')
     print("Saved language model results to results/language_model_results.csv")
 

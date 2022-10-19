@@ -80,7 +80,7 @@ def train_LR_model(train_file_path):
     vectoriser.fit(X_train)
     X_train = vectoriser.transform(X_train)
 
-    naiveBayesModel = MultinomialNB(C=2, max_iter=1000, n_jobs=-1)
+    naiveBayesModel = MultinomialNB()
     naiveBayesModel.fit(X_train, data['subtask_a'])
 
     return naiveBayesModel
